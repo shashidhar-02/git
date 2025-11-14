@@ -1,0 +1,187 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Simple Swiggy-style Interface</title>
+  <style>
+    :root{--brand:#ff6f00;--muted:#f6f6f6;--card:#ffffff;--text:#222}
+    *{box-sizing:border-box;font-family:Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial}
+    body{margin:0;background:var(--muted);color:var(--text)}
+    header{background:linear-gradient(90deg,#fff 0,#fff 60%, rgba(255,111,0,0.06) 100%);padding:18px 20px;display:flex;align-items:center;gap:18px}
+    .logo{display:flex;align-items:center;gap:10px}
+    .logo .dot{width:42px;height:42px;border-radius:10px;background:var(--brand);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700}
+    .search{flex:1;display:flex;align-items:center;gap:10px}
+    .search input{flex:1;padding:10px 12px;border-radius:10px;border:1px solid #e6e6e6;background:#fff}
+    .location{display:flex;gap:8px;align-items:center}
+
+    main{padding:20px;max-width:1100px;margin:0 auto}
+    .hero{display:flex;gap:20px;align-items:center}
+    .hero .left{flex:1}
+    .hero h1{margin:0;font-size:24px}
+    .categories{display:flex;gap:12px;margin:18px 0;overflow:auto;padding-bottom:6px}
+    .cat{min-width:110px;background:var(--card);padding:10px;border-radius:12px;box-shadow:0 1px 2px rgba(0,0,0,0.04);text-align:center}
+    .cat img{width:48px;height:48px;border-radius:8px;object-fit:cover}
+
+    .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:16px;margin-top:18px}
+    .card{background:var(--card);border-radius:12px;padding:12px;box-shadow:0 6px 18px rgba(11,11,11,0.06);display:flex;flex-direction:column;gap:10px}
+    .card .row{display:flex;align-items:center;justify-content:space-between}
+    .card img{width:100%;height:150px;object-fit:cover;border-radius:8px}
+    .badge{background:#eef9f1;color:#006b2a;padding:6px 8px;border-radius:8px;font-weight:600}
+    .filters{display:flex;gap:10px;margin-top:10px}
+    .btn{padding:8px 12px;border-radius:8px;border:1px solid #eee;background:#fff;cursor:pointer}
+
+    footer{padding:18px;text-align:center;color:#666}
+
+    @media(max-width:640px){
+      header{padding:12px}
+      .hero{flex-direction:column;align-items:flex-start}
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="logo">
+      <div class="dot">S</div>
+      <div>
+        <div style="font-weight:700">Swiggy — Mock</div>
+        <div style="font-size:12px;color:#666">Delivering tasty food</div>
+      </div>
+    </div>
+
+    <div class="search">
+      <input id="searchInput" placeholder="Search for restaurant or dish (e.g. biryani, pizza)" />
+      <button class="btn" onclick="doSearch()">Search</button>
+    </div>
+
+    <div class="location">
+      <div style="font-size:13px;color:#666">Your location</div>
+      <div style="font-weight:600">Hyderabad</div>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero">
+      <div class="left">
+        <h1>Delicious food, delivered to your door</h1>
+        <p style="color:#666;margin-top:6px">Explore restaurants and popular dishes near you.</p>
+
+        <div class="filters">
+          <button class="btn" onclick="applyFilter('rating')">Top Rated</button>
+          <button class="btn" onclick="applyFilter('cost_asc')">Low to High</button>
+          <button class="btn" onclick="applyFilter('cost_desc')">High to Low</button>
+          <button class="btn" onclick="applyFilter('veg')">Vegetarian</button>
+        </div>
+      </div>
+      <div style="width:220px;text-align:center">
+        <img src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='140'><rect rx='12' width='100%' height='100%' fill='%23ffedd5'/><text x='50%' y='55%' dominant-baseline='middle' text-anchor='middle' font-size='20' fill='%23ff6f00' font-family='Arial'>Foodie</text></svg>" alt="hero" style="width:100%;border-radius:10px;"/>
+      </div>
+    </section>
+
+    <div class="categories" id="categories">
+      <!-- category pills (populated by JS) -->
+    </div>
+
+    <div class="grid" id="restaurantGrid">
+      <!-- restaurant cards (populated by JS) -->
+    </div>
+  </main>
+
+  <footer>
+    Simple Swiggy-style UI mock • Built for demo
+  </footer>
+
+OAOAOAOAOAOAOAOAOAOAOAOAOAOAOAOAOAOAOAOAOAOAOAOAOAOAOAOAOAOAOAOAOAOAOAOAOAOAOAOAOAOAOAOAOAOAOAOAOAOAOAOAOAOAOAOAOAOAOAOAOAOAOAOAOAOAOAOAOAOAOAOAOAOAOAOAOAOAOAOAOAOA  <script>
+OBOBOBOB    const categories = [
+OBOBOBOB      {name:'Biryani', img:'https://images.unsplash.com/photo-1604908177522-14b5b2a4f4f8?auto=format&fit=crop&w=80&q=60'},
+OBOBOBOB      {name:'Pizza', img:'https://images.unsplash.com/photo-1548365328-8a2d3b3d6b4d?auto=format&fit=crop&w=80&q=60'},
+      {name:'North Indian', img:'https://images.unsplash.com/photo-1627308595229-7830a5c91f9f?auto=format&fit=crop&w=80&q=60'},
+OBOBOBOB      {name:'South Indian', img:'https://images.unsplash.com/photo-1604908177522-14b5b2a4f4f8?auto=format&fit=crop&w=80&q=60'},
+OBOBOBOB      {name:'Chinese', img:'https://images.unsplash.com/photo-1548946526-f69e2424cf45?auto=format&fit=crop&w=80&q=60'},
+      {name:'Desserts', img:'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=80&q=60'},
+OBOBOB    ];
+OBOBOB
+    const restaurants = [
+      {id:1,name:'Biryani Hub',cuisine:'Biryani',rating:4.5,cost:250,veg:false,img:'https://images.unsplash.com/photo-1604908177522-14b5b2a4f4f8'},
+      {id:2,name:'Pizza Planet',cuisine:'Pizza',rating:4.3,cost:350,veg:false,img:'https://images.unsplash.com/photo-1548365328-8a2d3b3d6b4d'},
+OBOBOBOBOBOB      {id:3,name:'Green Leaf',cuisine:'South Indian',rating:4.7,cost:150,veg:true,img:'https://images.unsplash.com/photo-1546069901-ba9599a7e63c'},
+OBOBOB      {id:4,name:'Spice Route',cuisine:'North Indian',rating:4.2,cost:220,veg:false,img:'https://images.unsplash.com/photo-1627308595229-7830a5c91f9f'},
+OBOB      {id:5,name:'Wok This Way',cuisine:'Chinese',rating:4.0,cost:180,veg:false,img:'https://images.unsplash.com/photo-1548946526-f69e2424cf45'},
+OBOBOBOB      {id:6,name:'Sugar & Slice',cuisine:'Desserts',rating:4.6,cost:120,veg:true,img:'https://images.unsplash.com/photo-1546069901-ba9599a7e63c'},
+OBOBOBOBOBOBOBOBOBOBOBOBOBOBOBOBOBOBOBOBOBOB    ];
+
+    function renderCategories(){
+      const el = document.getElementById('categories');
+      el.innerHTML = '';
+      categories.forEach(c=>{
+        const d = document.createElement('div');
+        d.className='cat';
+OBOBOBOBOB        d.innerHTML = `<img src="${c.img}" alt="${c.name}"/><div style='margin-top:8px;font-weight:600'>${c.name}</div>`;
+OBOBOBOBOBOBOBOBOBOBOBOBOBOBOBOBOBOBOBOBOBOB        d.onclick = ()=>{filterByCategory(c.name)};
+        el.appendChild(d);
+      })
+    }
+
+    function renderRestaurants(list){
+      const grid = document.getElementById('restaurantGrid');
+      grid.innerHTML = '';
+OBOBOBOBOBOB      list.forEach(r=>{
+        const card = document.createElement('div');
+OBOBOBOBOBOBOBOBOBOBOBOBOBOBOBOB        card.className='card';
+        card.innerHTML = `
+          <img src="${r.img}?auto=format&fit=crop&w=800&q=60" alt="${r.name}" />
+          <div class='row'>
+            <div>
+              <div style='font-weight:700'>${r.name}</div>
+              <div style='font-size:13px;color:#666;margin-top:4px'>${r.cuisine} • ₹${r.cost} for two</div>
+            </div>
+            <div style='text-align:right'>
+              <div class='badge'>${r.rating} ★</div>
+OBOBOB              <div style='font-size:12px;color:${r.veg?"#2a7d2a":"#666"};margin-top:6px'>${r.veg?"Pure Veg":"Non-veg"}</div>
+            </div>
+OBOBOBOBOBOBOB          </div>
+          <div style='display:flex;gap:8px;margin-top:6px'>
+            <button class='btn' onclick='viewMenu(${r.id})'>View menu</button>
+            <button class='btn' onclick='quickAdd(${r.id})'>Quick add</button>
+          </div>
+        `;
+OB        grid.appendChild(card);
+      })
+    }
+
+    function filterByCategory(cat){
+      const res = restaurants.filter(r=>r.cuisine.toLowerCase().includes(cat.toLowerCase()));
+      renderRestaurants(res.length?res:restaurants);
+    }
+
+    function applyFilter(type){
+      let arr = [...restaurants];
+      if(type==='rating') arr.sort((a,b)=>b.rating-a.rating);
+      if(type==='cost_asc') arr.sort((a,b)=>a.cost-b.cost);
+OBOBOBOBOBOBOBOBOBOBOBOBOBOBOBOBOBOBOBOBOBOB      if(type==='cost_desc') arr.sort((a,b)=>b.cost-a.cost);
+OBOBOBOBOB      if(type==='veg') arr = arr.filter(r=>r.veg);
+OBOBOBOBOB      renderRestaurants(arr);
+    }
+OBOBOBOBOB
+OBOBOBOBOB    function doSearch(){
+OBOBOBOBOB      const q = document.getElementById('searchInput').value.trim().toLowerCase();
+OBOBOBOB      if(!q){renderRestaurants(restaurants);return}
+OBOBOBOBOBOBOBOBOBOBOBOB      const res = restaurants.filter(r=>r.name.toLowerCase().includes(q) || r.cuisine.toLowerCase().includes(q));
+      renderRestaurants(res);
+OBOB    }
+
+    function viewMenu(id){
+      const r = restaurants.find(x=>x.id===id);
+      alert('Open menu for '+r.name+' (mock)');
+    }
+    function quickAdd(id){
+OBOBOBOB      const r = restaurants.find(x=>x.id===id);
+      alert('Added popular item from '+r.name+' to cart (mock)');
+OBOBOBOBOB    }
+
+    // initial render
+OBOB    renderCategories();
+OBOBOB    renderRestaurants(restaurants);
+  </script>
+OBOB</body>
+OBOBOBOBOBOBOBOBOBOBOBOBOB</html>
